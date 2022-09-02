@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/684.de71d886.chunk.js","mappings":"+KAIe,SAASA,IACtB,OAAO,uBACR,C","sources":["assets/themes/AdminTheme.js"],"sourcesContent":["import React from 'react'\r\n\r\nimport '../../portals/assets/css/index.css';\r\n\r\nexport default function AdminTheme() {\r\n  return <></>\r\n}"],"names":["AdminTheme"],"sourceRoot":""}
