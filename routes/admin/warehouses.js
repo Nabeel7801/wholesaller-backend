@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const { authenticateUser, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../../controllers/warehousesController")
+const { authenticateUser, getCount, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../../controllers/warehousesController")
 
 router.post('/warehouse/authenticateUser/:username/:password', authenticateUser)
+
+router.get('/admin/warehouses_count', getCount)
 
 router.get('/admin/warehouses', getList)
 

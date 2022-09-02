@@ -11,6 +11,12 @@ const authenticateUser = (req, res) => {
         .catch(err => res.status(400).json({ error: err }))
 }
 
+// Get Count
+const getCount = (req, res) => {
+    Warehouses.find()
+        .then(warehouses => warehouses.length)
+        .catch(err => res.status(400).json({ error: err }))
+}
 
 // Get List
 const getList = (req, res) => {
@@ -129,4 +135,4 @@ const deleteMany = (req, res) => {
 }
 
 
-module.exports = { authenticateUser, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };
+module.exports = { authenticateUser, getCount, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };

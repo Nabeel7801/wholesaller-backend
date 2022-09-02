@@ -1,6 +1,13 @@
 
 const Customers = require("../models/customersSchema")
 
+// Get Count
+const getCount = (req, res) => {
+    Customers.find()
+        .then(customers => customers.length)
+        .catch(err => res.status(400).json({ error: err }))
+}
+
 // Get List
 const getList = (req, res) => {
     let { sort, range, filter } = req.query;
@@ -147,4 +154,4 @@ const deleteMany = (req, res) => {
 }
 
 
-module.exports = { getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };
+module.exports = { getCount, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };
