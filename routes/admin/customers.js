@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getCount, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../../controllers/customersController")
-
-router.get('/admin/customers_count', getCount)
+const { getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../../controllers/customersController")
 
 router.get('/admin/customers', getList)
 
