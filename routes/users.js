@@ -7,6 +7,7 @@ const upload = require("../middleware/upload");
 
 const Users = require("../models/usersSchema")
 const Documents = require("../models/documentsSchema")
+const Customers = require("../models/customersSchema")
 
 router.post('/signin', (req, res) => {
 
@@ -44,9 +45,22 @@ router.post('/uploadDocument/:id', upload.single("document"), (req, res) => {
     .catch(err => res.status(400).json({ error: err }))
 })
 
+router.put('/updateStatus/:id', (req, res) => {
+    Documents.findByIdAndUpdate(req.params.id, req.body)
+        .then(response => res.json(response))
+        .catch(err => res.status(400).json("Error: " + err))
+
+})
+
 router.post('/getStatus/:id', (req, res) => {
 
     Documents.findById(mongoose.Types.ObjectId(req.params.id))
+        .then(response => res.json(response))
+        .catch(err => res.status(400).json({ error: err }))
+})
+
+router.get('/getCustomerID/:userID', (req, res) => {
+    Customers.find({ user_id: mongoose.Types.ObjectId(req.params.userID) })
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 })

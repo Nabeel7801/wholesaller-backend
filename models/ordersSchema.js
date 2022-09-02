@@ -4,6 +4,8 @@ const ordersSchema = new mongoose.Schema({
     reference: { type: String, required: false },
     date: { type: String, required: false },
     customer_id: { type: String, required: false },
+    dealer_type: { type: String, required: false },
+    dealer_id: { type: String, required: false},
     basket: { type: Array, required: false },
     delivery_fees: { type: Number, required: false },
     total: { type: Number, required: false },

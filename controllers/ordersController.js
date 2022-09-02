@@ -92,11 +92,20 @@ const getManyReference = (req, res) => {
 
 // Create One
 const createOne = (req, res) => {
-    const newPost = new Orders(req.body);
+    Orders.findOne({}, {}, { sort: { 'reference' : -1 } })
+    .then(order => {
+        const reference = (order && order.reference) 
+        ? "WS-" + (("00000" + String(parseInt(order.reference.split('-')[1]) + 1)).slice(-5))
+        : "WS-00001";
 
-    newPost.save()
-        .then(response => res.json(response))
-        .catch(err => res.status(400).json("Error: " + err))
+        const newPost = new Orders({...req.body, reference: reference});
+
+        newPost.save()
+            .then(response => res.json(response))
+            .catch(err => res.status(400).json("Error: " + err))
+
+    }).catch(err => res.status(400).json("Error: " + err))
+    
 }
 
 // Update One
