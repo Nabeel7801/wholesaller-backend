@@ -4,7 +4,7 @@ const Customers = require("../models/customersSchema")
 // Get Count
 const getCount = (req, res) => {
     Customers.find()
-        .then(customers => customers.length)
+        .then(customers => ({ count: customers.length }))
         .catch(err => res.status(400).json({ error: err }))
 }
 

@@ -14,7 +14,7 @@ const authenticateUser = (req, res) => {
 // Get Count
 const getCount = (req, res) => {
     Warehouses.find()
-        .then(warehouses => warehouses.length)
+        .then(warehouses => ({ count: warehouses.length }))
         .catch(err => res.status(400).json({ error: err }))
 }
 
