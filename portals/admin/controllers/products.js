@@ -1,25 +1,8 @@
-
-const Orders = require("../models/ordersSchema")
-
-// Get List
-const getOrdersCount = (req, res) => {
-    
-    Orders.count({status: "ordered"})
-    .then(totalOrdered => {
-        Orders.count({status: "delivered"})
-        .then(totalDelivered => {
-            Orders.count({status: "cancelled"})
-            .then(totalCancelled => {
-                res.json({ordered: totalOrdered, delivered: totalDelivered, cancelled: totalCancelled});
-            })
-        })
-    }).catch(err => res.status(400).json({ error: err }))
-
-
-}
+ 
+const Products = require("../../../models/Products")
 
 // Get List
-const getList = (req, res) => {
+exports.getList = (req, res) => {
     let { sort, range, filter } = req.query;
     sort = sort ? JSON.parse(sort) : {"_id": 1};
 
@@ -33,26 +16,28 @@ const getList = (req, res) => {
         getManyReference(req, res);
 
     }else {
-        if (filter["reference"]) filter["reference"] = new RegExp('^' + filter.reference + '.*', "i");
         if (filter["total_gte"]) {filter["total"] = {$gt: parseFloat(filter["total_gte"])}; delete filter["total_gte"];}
         if (filter["date_gte"]) {filter["date"] = {$gt: filter["date_gte"]}; delete filter["date_gte"];}
         if (filter["date_lte"]) {filter["date"] = {$lt: filter["date_lte"]}; delete filter["date_lte"];}
-        if (filter["q"]) delete filter["q"];
+        if (filter["q"]) {
+            filter["reference"] = new RegExp(filter["q"], "i");
+            delete filter["q"];
+        }
     
-        Orders.aggregate([
+        Products.aggregate([
             {$match: filter},
             {$count: "count"}
         ])
         .then(([tempRes]) => {
             const count = tempRes ? tempRes.count : 0;
             
-            Orders.aggregate([
+            Products.aggregate([
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
                 {$sort: sort}
             ]).then(response => {
-                response.push({'content-range': `items ${skip}-${range[1]}/${count}`});
+                res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);
             })
             .catch(err => res.status(400).json({ error: err }))
@@ -64,18 +49,18 @@ const getList = (req, res) => {
 }
 
 // Get One
-const getOne = (req, res) => {
-    Orders.findById(req.params.id)
+exports.getOne = (req, res) => {
+    Products.findById(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Get Many
-const getMany = (req, res) => {
+exports.getMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Orders.find({_id: {$in: ids}})
+    Products.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
@@ -85,63 +70,65 @@ const getManyReference = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Orders.find({_id: {$in: ids}})
+    Products.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Create One
-const createOne = (req, res) => {
-    Orders.findOne({}, {}, { sort: { 'reference' : -1 } })
-    .then(order => {
-        const reference = (order && order.reference) 
-        ? "WS-" + (("00000" + String(parseInt(order.reference.split('-')[1]) + 1)).slice(-5))
-        : "WS-00001";
+exports.createOne = (req, res) => {
+    const obj = {
+        ...req.body,
+        image: req.file && req.file.filename
+    };
 
-        const newPost = new Orders({...req.body, reference: reference});
+    if (!obj["image"]) delete obj["image"];
+ 
+    const newProduct = new Products(obj);
 
-        newPost.save()
-            .then(response => res.json(response))
-            .catch(err => res.status(400).json("Error: " + err))
-
-    }).catch(err => res.status(400).json("Error: " + err))
-    
+    newProduct.save()
+        .then(response => res.json(response))
+        .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update One
-const updateOne = (req, res) => {
-    Orders.updateOne({_id: req.params.id}, req.body)
-        .then(response => {console.log(response); res.json(response)})
+exports.updateOne = (req, res) => {
+    const obj = {
+        ...req.body,
+        image: req.file && req.file.filename
+    };
+
+    if (!obj["image"]) delete obj["image"];
+
+    Products.findByIdAndUpdate(req.params.id, obj)
+        .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update Many
-const updateMany = (req, res) => {
+exports.updateMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Orders.updateMany({_id: { $in: ids }})
+    Products.updateMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
         
 }
 
 // Delete One
-const deleteOne = (req, res) => {
-    Orders.findByIdAndDelete(req.params.id)
+exports.deleteOne = (req, res) => {
+    Products.findByIdAndDelete(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Delete Many
-const deleteMany = (req, res) => {
+exports.deleteMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Orders.deleteMany({_id: { $in: ids }})
+    Products.deleteMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
-
-
-module.exports = { getOrdersCount, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };

@@ -1,8 +1,8 @@
 
-const Categories = require("../models/categoriesSchema")
+const Payments = require("../../../models/Payments")
 
 // Get List
-const getList = (req, res) => {
+exports.getList = (req, res) => {
     let { sort, range, filter } = req.query;
     sort = sort ? JSON.parse(sort) : {"_id": 1};
 
@@ -16,23 +16,28 @@ const getList = (req, res) => {
         getManyReference(req, res);
 
     }else {
-        if (filter["title"]) filter["title"] = new RegExp('^' + filter.title + '.*', "i");
-        if (filter["q"]) delete filter["q"];
+        if (filter["total_gte"]) {filter["total"] = {$gt: parseFloat(filter["total_gte"])}; delete filter["total_gte"];}
+        if (filter["date_gte"]) {filter["date"] = {$gt: filter["date_gte"]}; delete filter["date_gte"];}
+        if (filter["date_lte"]) {filter["date"] = {$lt: filter["date_lte"]}; delete filter["date_lte"];}
+        if (filter["q"]) {
+            filter["reference"] = new RegExp(filter["q"], "i");
+            delete filter["q"];
+        }
     
-        Categories.aggregate([
+        Payments.aggregate([
             {$match: filter},
             {$count: "count"}
         ])
         .then(([tempRes]) => {
             const count = tempRes ? tempRes.count : 0;
             
-            Categories.aggregate([
+            Payments.aggregate([
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
                 {$sort: sort}
             ]).then(response => {
-                response.push({'content-range': `items ${skip}-${range[1]}/${count}`});
+                res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);
             })
             .catch(err => res.status(400).json({ error: err }))
@@ -44,18 +49,18 @@ const getList = (req, res) => {
 }
 
 // Get One
-const getOne = (req, res) => {
-    Categories.findById(req.params.id)
+exports.getOne = (req, res) => {
+    Payments.findById(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Get Many
-const getMany = (req, res) => {
+exports.getMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Categories.find({_id: {$in: ids}})
+    Payments.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
@@ -65,68 +70,59 @@ const getManyReference = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Categories.find({_id: {$in: ids}})
+    Payments.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Create One
-const createOne = (req, res) => {
-    const obj = {
-        ...req.body,
-        image: req.file && req.file.filename
-    };
+exports.createOne = (req, res) => {
+    Payments.findOne({}, {}, { sort: { 'reference' : -1 } })
+    .then(payment => {
+        const reference = (payment && payment.reference) 
+        ? "PR-" + (("00000" + String(parseInt(payment.reference.split('-')[1]) + 1)).slice(-5))
+        : "PR-00001";
 
-    if (!obj["image"]) delete obj["image"];
+        const newProduct = new Payments({...req.body, reference: reference, type: "Invoice Payment" });
 
-    const newPost = new Categories(obj);
+        newProduct.save()
+            .then(response => res.json(response))
+            .catch(err => res.status(400).json("Error: " + err))
 
-    newPost.save()
-        .then(response => res.json(response))
-        .catch(err => res.status(400).json("Error: " + err))
+    }).catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update One
-const updateOne = (req, res) => {
-    const obj = {
-        ...req.body,
-        image: req.file && req.file.filename
-    };
-
-    if (!obj["image"]) delete obj["image"];
-
-    Categories.findByIdAndUpdate(req.params.id, obj)
+exports.updateOne = (req, res) => {
+    Payments.findByIdAndUpdate(req.params.id, req.body)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update Many
-const updateMany = (req, res) => {
+exports.updateMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Categories.updateMany({_id: { $in: ids }})
+    Payments.updateMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
         
 }
 
 // Delete One
-const deleteOne = (req, res) => {
-    Categories.findByIdAndDelete(req.params.id)
+exports.deleteOne = (req, res) => {
+    Payments.findByIdAndDelete(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Delete Many
-const deleteMany = (req, res) => {
+exports.deleteMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Categories.deleteMany({_id: { $in: ids }})
+    Payments.deleteMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
-
-
-module.exports = { getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };

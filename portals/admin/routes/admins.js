@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { authenticateUser, getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../../controllers/adminsController")
+const { authenticateUser, getList, getOne, getMany, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../controllers/admins")
 
 router.post('/admin/authenticateUser/:username/:password', authenticateUser)
 
@@ -10,8 +10,6 @@ router.get('/admin/admins', getList)
 router.get('/admin/admins/:id', getOne)
 
 router.get('/admin/admins', getMany)
-
-router.get('/admin/admins', getManyReference)
 
 router.delete('/admin/admins/:id', deleteOne)
 

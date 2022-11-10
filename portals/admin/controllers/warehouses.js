@@ -1,8 +1,18 @@
+const md5 = require('md5')
+const Warehouses = require("../../../models/Warehouses")
 
-const Payments = require("../models/paymentsSchema")
+// Authenticate User
+exports.authenticateUser = (req, res) => {
+    const username= req.params.username
+    const password = md5(req.params.password)
+
+    Warehouses.find({username: username, password: password})
+        .then(user => res.json(user))
+        .catch(err => res.status(400).json({ error: err }))
+}
 
 // Get List
-const getList = (req, res) => {
+exports.getList = (req, res) => {
     let { sort, range, filter } = req.query;
     sort = sort ? JSON.parse(sort) : {"_id": 1};
 
@@ -16,28 +26,26 @@ const getList = (req, res) => {
         getManyReference(req, res);
 
     }else {
-        if (filter["total_gte"]) {filter["total"] = {$gt: parseFloat(filter["total_gte"])}; delete filter["total_gte"];}
-        if (filter["date_gte"]) {filter["date"] = {$gt: filter["date_gte"]}; delete filter["date_gte"];}
-        if (filter["date_lte"]) {filter["date"] = {$lt: filter["date_lte"]}; delete filter["date_lte"];}
-        if (filter["q"]) {
-            filter["reference"] = new RegExp(filter["q"], "i");
-            delete filter["q"];
-        }
-    
-        Payments.aggregate([
+        
+        Warehouses.aggregate([
             {$match: filter},
             {$count: "count"}
         ])
         .then(([tempRes]) => {
             const count = tempRes ? tempRes.count : 0;
             
-            Payments.aggregate([
+            Warehouses.aggregate([
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
-                {$sort: sort}
+                {$sort: sort},
+                {
+                    $set: {
+                        zipcodes: {$slice: ["$zipcodes", 5]}
+                    }
+                }
             ]).then(response => {
-                response.push({'content-range': `items ${skip}-${range[1]}/${count}`});
+                res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);
             })
             .catch(err => res.status(400).json({ error: err }))
@@ -49,18 +57,18 @@ const getList = (req, res) => {
 }
 
 // Get One
-const getOne = (req, res) => {
-    Payments.findById(req.params.id)
+exports.getOne = (req, res) => {
+    Warehouses.findById(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Get Many
-const getMany = (req, res) => {
+exports.getMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Payments.find({_id: {$in: ids}})
+    Warehouses.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
@@ -70,62 +78,51 @@ const getManyReference = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Payments.find({_id: {$in: ids}})
+    Warehouses.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Create One
-const createOne = (req, res) => {
-    Payments.findOne({}, {}, { sort: { 'reference' : -1 } })
-    .then(payment => {
-        const reference = (payment && payment.reference) 
-        ? "PR-" + (("00000" + String(parseInt(payment.reference.split('-')[1]) + 1)).slice(-5))
-        : "PR-00001";
+exports.createOne = (req, res) => {
+    const newPost = new Warehouses(req.body);
 
-        const newProduct = new Payments({...req.body, reference: reference, type: "Invoice Payment" });
-
-        newProduct.save()
-            .then(response => res.json(response))
-            .catch(err => res.status(400).json("Error: " + err))
-
-    }).catch(err => res.status(400).json("Error: " + err))
+    newPost.save()
+        .then(response => res.json(response))
+        .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update One
-const updateOne = (req, res) => {
-    Payments.findByIdAndUpdate(req.params.id, req.body)
+exports.updateOne = (req, res) => {
+    Warehouses.findByIdAndUpdate(req.params.id, req.body)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update Many
-const updateMany = (req, res) => {
+exports.updateMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Payments.updateMany({_id: { $in: ids }})
+    Warehouses.updateMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
         
 }
 
 // Delete One
-const deleteOne = (req, res) => {
-    Payments.findByIdAndDelete(req.params.id)
+exports.deleteOne = (req, res) => {
+    Warehouses.findByIdAndDelete(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Delete Many
-const deleteMany = (req, res) => {
+exports.deleteMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Payments.deleteMany({_id: { $in: ids }})
+    Warehouses.deleteMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
-
-
-module.exports = { getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };

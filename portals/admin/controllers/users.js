@@ -1,8 +1,8 @@
- 
-const Products = require("../models/productsSchema")
+const mongoose = require('mongoose');
+const Users = require("../../../models/Users")
 
 // Get List
-const getList = (req, res) => {
+exports.getList = (req, res) => {
     let { sort, range, filter } = req.query;
     sort = sort ? JSON.parse(sort) : {"_id": 1};
 
@@ -16,28 +16,36 @@ const getList = (req, res) => {
         getManyReference(req, res);
 
     }else {
-        if (filter["total_gte"]) {filter["total"] = {$gt: parseFloat(filter["total_gte"])}; delete filter["total_gte"];}
-        if (filter["date_gte"]) {filter["date"] = {$gt: filter["date_gte"]}; delete filter["date_gte"];}
-        if (filter["date_lte"]) {filter["date"] = {$lt: filter["date_lte"]}; delete filter["date_lte"];}
-        if (filter["q"]) {
-            filter["reference"] = new RegExp(filter["q"], "i");
-            delete filter["q"];
-        }
-    
-        Products.aggregate([
+        
+        Users.aggregate([
             {$match: filter},
             {$count: "count"}
         ])
         .then(([tempRes]) => {
             const count = tempRes ? tempRes.count : 0;
             
-            Products.aggregate([
+            Users.aggregate([
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
-                {$sort: sort}
+                {$sort: sort},
+                {
+                    $lookup: {
+                        from: "documents",
+                        localField: "document",
+                        foreignField: "_id",
+                        as: "_document"
+                    },
+                },
+                {
+                    $set: {
+                        filename: { $arrayElemAt: ["$_document.document", 0] },
+                        status: { $arrayElemAt: ["$_document.status", 0] }
+                    }
+                }
+                
             ]).then(response => {
-                response.push({'content-range': `items ${skip}-${range[1]}/${count}`});
+                res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);
             })
             .catch(err => res.status(400).json({ error: err }))
@@ -49,18 +57,38 @@ const getList = (req, res) => {
 }
 
 // Get One
-const getOne = (req, res) => {
-    Products.findById(req.params.id)
-        .then(response => res.json(response))
+exports.getOne = (req, res) => {
+    Users.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(req.params.id) }
+        },
+        {
+            $lookup: {
+                from: "documents",
+                localField: "document",
+                foreignField: "_id",
+                as: "_document"
+            },
+        },
+        {
+            $set: {
+                filename: { $arrayElemAt: ["$_document.document", 0] },
+                type: { $arrayElemAt: ["$_document.type", 0] },
+                status: { $arrayElemAt: ["$_document.status", 0] }
+            }
+        }
+        
+    ])
+        .then(response => res.json(response[0]))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Get Many
-const getMany = (req, res) => {
+exports.getMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Products.find({_id: {$in: ids}})
+    Users.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
@@ -70,68 +98,51 @@ const getManyReference = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Products.find({_id: {$in: ids}})
+    Users.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Create One
-const createOne = (req, res) => {
-    const obj = {
-        ...req.body,
-        image: req.file && req.file.filename
-    };
+exports.createOne = (req, res) => {
+    const newPost = new Users(req.body);
 
-    if (!obj["image"]) delete obj["image"];
- 
-    const newProduct = new Products(obj);
-
-    newProduct.save()
+    newPost.save()
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update One
-const updateOne = (req, res) => {
-    const obj = {
-        ...req.body,
-        image: req.file && req.file.filename
-    };
-
-    if (!obj["image"]) delete obj["image"];
-
-    Products.findByIdAndUpdate(req.params.id, obj)
+exports.updateOne = (req, res) => {
+    Users.findByIdAndUpdate(req.params.id, req.body)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Update Many
-const updateMany = (req, res) => {
+exports.updateMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Products.updateMany({_id: { $in: ids }})
+    Users.updateMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
         
 }
 
 // Delete One
-const deleteOne = (req, res) => {
-    Products.findByIdAndDelete(req.params.id)
+exports.deleteOne = (req, res) => {
+    Users.findByIdAndDelete(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
 // Delete Many
-const deleteMany = (req, res) => {
+exports.deleteMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Products.deleteMany({_id: { $in: ids }})
+    Users.deleteMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
-
-
-module.exports = { getList, getOne, getMany, getManyReference, createOne, updateOne, updateMany, deleteOne, deleteMany };

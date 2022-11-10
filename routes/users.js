@@ -5,9 +5,9 @@ const md5 = require('md5')
 const router = express.Router();
 const upload = require("../middleware/upload");
 
-const Users = require("../models/usersSchema")
-const Documents = require("../models/documentsSchema")
-const Customers = require("../models/customersSchema")
+const Users = require("../models/Users")
+const Documents = require("../models/Documents")
+const Customers = require("../models/Customers")
 
 router.post('/signin', (req, res) => {
 

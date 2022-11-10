@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Products = require("../models/productsSchema")
+const Products = require("../models/Products")
 
 router.post('/getProductByChildCategory/:id', (req, res) => {
     Products.find({child_category: req.params.id})

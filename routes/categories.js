@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Categories = require("../models/categoriesSchema")
+const Categories = require("../models/Categories")
 
 router.post('/categoriesByParent/:parent', (req, res) => {
     Categories.find({parent: req.params.parent})
@@ -14,9 +14,5 @@ router.post('/maincategories', (req, res) => {
         .catch(err => res.status(400).json({ error: err }))
 })
 
-router.post('/api/displaycategory', (req, res) => {
-    res.json({json: "OK"})
-
-})
 
 module.exports = router

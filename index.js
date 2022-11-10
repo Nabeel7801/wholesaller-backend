@@ -15,7 +15,11 @@ connection.once("open", () => {
 })
 
 const app = express();
-app.use(cors());  
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET','POST','DELETE','UPDATE','PUT'],
+  exposedHeaders: ['Content-Range'],
+}));  
 
 app.use(express.json());
 
@@ -23,19 +27,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // ---------- Admin Routes ----------
-app.use("/api", require("./routes/admin/admins"))
-
-app.use("/api", require("./routes/admin/products"))
-app.use("/api", require("./routes/admin/categories"))
-
-app.use("/api", require("./routes/admin/orders"))
-app.use("/api", require("./routes/admin/invoices"))
-
-app.use("/api", require("./routes/admin/payments"))
-
-app.use("/api", require("./routes/admin/users"))
-app.use("/api", require("./routes/admin/customers"))
-app.use("/api", require("./routes/admin/warehouses"))
+app.use("/api", require('./portals/admin'))
 
 // ---------- Rest of the App Routes ----------
 app.use("/api", require("./routes/users"))

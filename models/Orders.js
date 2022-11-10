@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const ordersSchema = new mongoose.Schema({
     reference: { type: String, required: false },
     date: { type: String, required: false },
+    user_id: { type: String, required: false },
     customer_id: { type: String, required: false },
     dealer_type: { type: String, required: false },
     dealer_id: { type: String, required: false},
