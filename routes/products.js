@@ -8,6 +8,12 @@ router.post('/getProductByChildCategory/:id', (req, res) => {
         .catch(err => res.status(400).json({ error: err }))
 })
 
+router.post('/getProductBySubCategory/:id', (req, res) => {
+    Products.find({sub_category: req.params.id})
+        .then(response => res.json(response))
+        .catch(err => res.status(400).json({ error: err }))
+})
+
 router.post('/getProductByMainCategory/:id', (req, res) => {
     Products.find({main_category: req.params.id})
         .then(response => res.json(response))

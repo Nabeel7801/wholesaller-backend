@@ -143,8 +143,8 @@ exports.createOne = (req, res) => {
 
 // Update One
 exports.updateOne = (req, res) => {
-    Orders.updateOne({_id: req.params.id}, req.body)
-        .then(response => {console.log(response); res.json(response)})
+    Orders.findByIdAndUpdate(req.params.id, req.body, {new: true})
+        .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
 
