@@ -1,6 +1,5 @@
-const mongoose = require('mongoose');
-const Users = require("../../../models/Users")
-const CryptoJS = require("crypto-js");
+
+const Banners = require("../../../models/Banners")
 
 // Get List
 exports.getList = (req, res) => {
@@ -17,34 +16,21 @@ exports.getList = (req, res) => {
         getManyReference(req, res);
 
     }else {
-        
-        Users.aggregate([
+        if (filter["title"]) filter["title"] = new RegExp('^' + filter.title + '.*', "i");
+        if (filter["q"]) delete filter["q"];
+    
+        Banners.aggregate([
             {$match: filter},
             {$count: "count"}
         ])
         .then(([tempRes]) => {
             const count = tempRes ? tempRes.count : 0;
             
-            Users.aggregate([
+            Banners.aggregate([
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
-                {$sort: sort},
-                {
-                    $lookup: {
-                        from: "documents",
-                        localField: "document",
-                        foreignField: "_id",
-                        as: "_document"
-                    },
-                },
-                {
-                    $set: {
-                        filename: { $arrayElemAt: ["$_document.document", 0] },
-                        status: { $arrayElemAt: ["$_document.status", 0] }
-                    }
-                }
-                
+                {$sort: sort}
             ]).then(response => {
                 res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);
@@ -59,31 +45,8 @@ exports.getList = (req, res) => {
 
 // Get One
 exports.getOne = (req, res) => {
-    Users.aggregate([
-        {
-            $match: { _id: new mongoose.Types.ObjectId(req.params.id) }
-        },
-        {
-            $lookup: {
-                from: "documents",
-                localField: "document",
-                foreignField: "_id",
-                as: "_document"
-            },
-        },
-        {
-            $set: {
-                filename: { $arrayElemAt: ["$_document.document", 0] },
-                type: { $arrayElemAt: ["$_document.type", 0] },
-                status: { $arrayElemAt: ["$_document.status", 0] }
-            }
-        }
-        
-    ])
-        .then(response => res.json({
-            ...response[0], 
-            password: CryptoJS.AES.decrypt(response[0].password, process.env.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8)
-        }))
+    Banners.findById(req.params.id)
+        .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
@@ -92,7 +55,7 @@ exports.getMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Users.find({_id: {$in: ids}})
+    Banners.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
@@ -102,30 +65,46 @@ const getManyReference = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Users.find({_id: {$in: ids}})
+    Banners.find({_id: {$in: ids}})
         .then(response => res.json(response))
         .catch(err => res.status(400).json({ error: err }))
 }
 
 // Create One
 exports.createOne = (req, res) => {
-    const newPost = new Users(req.body);
+    Banners.findOne({}, {}, { sort: { 'reference' : -1 } })
+    .then(order => {
+        const reference = (order && order.reference) 
+        ? "BN-" + (("00000" + String(parseInt(order.reference.split('-')[1]) + 1)).slice(-5))
+        : "BN-00001";
 
-    newPost.save()
-        .then(response => res.json(response))
-        .catch(err => res.status(400).json("Error: " + err))
+        const obj = {
+            ...req.body,
+            reference,
+            image: req.file && req.file.filename
+        };
+        
+        if (!obj["image"]) delete obj["image"];
+        const newPost = new Banners(obj);
+
+        newPost.save()
+            .then(response => res.json(response))
+            .catch(err => res.status(400).json("Error: " + err))
+
+    }).catch(err => res.status(400).json("Error: " + err))
+    
 }
 
 // Update One
 exports.updateOne = (req, res) => {
     const obj = {
         ...req.body,
-        avatar: req.file && req.file.filename
+        image: req.file && req.file.filename
     };
 
-    if (!obj["avatar"]) delete obj["avatar"];
+    if (!obj["image"]) delete obj["image"];
 
-    Users.findByIdAndUpdate(req.params.id, obj, {new: true})
+    Banners.findByIdAndUpdate(req.params.id, obj, {new: true})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
@@ -135,7 +114,7 @@ exports.updateMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Users.updateMany({_id: { $in: ids }})
+    Banners.updateMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
         
@@ -143,7 +122,7 @@ exports.updateMany = (req, res) => {
 
 // Delete One
 exports.deleteOne = (req, res) => {
-    Users.findByIdAndDelete(req.params.id)
+    Banners.findByIdAndDelete(req.params.id)
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }
@@ -153,7 +132,7 @@ exports.deleteMany = (req, res) => {
     const { filter } = req.query;
     const ids = JSON.parse(filter)["id"];
 
-    Users.deleteMany({_id: { $in: ids }})
+    Banners.deleteMany({_id: { $in: ids }})
         .then(response => res.json(response))
         .catch(err => res.status(400).json("Error: " + err))
 }

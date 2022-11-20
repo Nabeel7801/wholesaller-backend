@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const express = require("express");
+const CryptoJS = require("crypto-js");
 const md5 = require('md5')
 
 const router = express.Router();
@@ -11,13 +12,23 @@ const Customers = require("../models/Customers")
 
 router.post('/signin', (req, res) => {
 
-    Users.find({email: req.body.email, password: md5(req.body.password)})
-        .then(response => res.json(response))
+    Users.findOne({email: req.body.email})
+        .then(response => {
+            const password = CryptoJS.AES.decrypt(response.password, process.env.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
+            if (password === req.body.password) {
+                res.json(response);
+            }else {
+                res.json(null);
+            }
+        })
         .catch(err => res.status(400).json({ error: err }))
+    
 })
 
 router.post('/register', (req, res) => {
-    const newUser = new Users({...req.body, password: md5(req.body.password), document: null});
+    console.log(req.body.password)
+    const password = CryptoJS.AES.encrypt(req.body.password, process.env.ENCRYPTION_KEY).toString();
+    const newUser = new Users({...req.body, password, document: null});
 
     Users.findOne({ email: req.body.email })
     .then(user => {

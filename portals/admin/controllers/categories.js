@@ -78,7 +78,6 @@ exports.createOne = (req, res) => {
     };
 
     if (!obj["image"]) delete obj["image"];
-
     const newPost = new Categories(obj);
 
     newPost.save()

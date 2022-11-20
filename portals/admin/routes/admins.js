@@ -3,22 +3,22 @@ const router = express.Router();
 
 const { authenticateUser, getList, getOne, getMany, createOne, updateOne, updateMany, deleteOne, deleteMany } = require("../controllers/admins")
 
-router.post('/admin/authenticateUser/:username/:password', authenticateUser)
+router.post('/authenticateUser/:username/:password', authenticateUser)
 
-router.get('/admin/admins', getList)
+router.get('/admins', getList)
 
-router.get('/admin/admins/:id', getOne)
+router.get('/admins/:id', getOne)
 
-router.get('/admin/admins', getMany)
+router.get('/admins', getMany)
 
-router.delete('/admin/admins/:id', deleteOne)
+router.delete('/admins/:id', deleteOne)
 
-router.delete('/admin/admins', deleteMany)
+router.delete('/admins', deleteMany)
 
-router.put('/admin/admins/:id', updateOne)
+router.put('/admins/:id', updateOne)
 
-router.put('/admin/admins', updateMany)
+router.put('/admins', updateMany)
 
-router.post('/admin/admins', createOne)
+router.post('/admins', createOne)
 
 module.exports = router

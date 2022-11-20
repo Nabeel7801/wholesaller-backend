@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({
+    avatar: { type: String, required: false },
     outlet_name: { type: String, required: false },
     first_name: { type: String, required: false },
     last_name: { type: String, required: false },
@@ -18,26 +19,26 @@ const UserSchema = new mongoose.Schema({
     document: { type: mongoose.Schema.Types.ObjectId, required: false }
 });
 
-UserSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
-      next();
-    }
+// UserSchema.pre("save", async function (next) {
+//     if (!this.isModified("password")) {
+//       next();
+//     }
   
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-});
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(this.password, salt);
+//     next();
+// });
   
-UserSchema.methods.matchPassword = async function (password) {
-    const result = await bcrypt.compare(password, this.password);
-    return result;
-};
+// UserSchema.methods.matchPassword = async function (password) {
+//     const result = await bcrypt.compare(password, this.password);
+//     return result;
+// };
   
-UserSchema.methods.getSignedJwtToken = function () {
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
-    });
-};
+// UserSchema.methods.getSignedJwtToken = function () {
+//     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+//       expiresIn: process.env.JWT_EXPIRE,
+//     });
+// };
   
 const Users = mongoose.model("users", UserSchema)
 

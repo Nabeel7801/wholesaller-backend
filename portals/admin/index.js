@@ -16,4 +16,6 @@ app.use("/admin", require("./routes/users"))
 app.use("/admin", require("./routes/customers"))
 app.use("/admin", require("./routes/warehouses"))
 
+app.use("/admin", require("./routes/banners"))
+
 module.exports = app
