@@ -5,12 +5,13 @@ const Products = require("../models/Products")
 
 router.post('/getProductByCategories', (req, res) => {
     const categories = (req.body || []);
-    console.log(categories)
     Products.aggregate([
         {
             $match: { 
                 $or: [
-                    { main_category: { $in: categories } }
+                    { main_category: { $in: categories } },
+                    { sub_category: { $in: categories } },
+                    { child_category: { $in: categories } }
                 ]
             }
         }
