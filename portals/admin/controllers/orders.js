@@ -49,7 +49,6 @@ exports.getList = (req, res) => {
                 {$skip: skip},
                 {$match: filter},
                 {$limit: limit},
-                {$sort: sort},
                 {$unwind: "$basket"},
                 {
                     $lookup: {
@@ -80,6 +79,7 @@ exports.getList = (req, res) => {
                         dealer_id: { $first: "$dealer_id" },
                     }
                 },
+                {$sort: sort},
 
             ]).then(response => {
                 res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);

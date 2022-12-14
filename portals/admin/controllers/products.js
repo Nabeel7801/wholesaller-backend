@@ -7,7 +7,9 @@ exports.getList = (req, res) => {
     sort = sort ? JSON.parse(sort) : {"_id": 1};
 
     range = range ? JSON.parse(range) : [0, 100];
-    filter = JSON.parse(filter);
+    filter = filter ? JSON.parse(filter) : {};
+    const tags = filter["tags"];
+    delete filter["tags"];
 
     const skip = parseInt(range[0]);
     const limit = parseInt(range[1]) - parseInt(range[0]) + 1;
@@ -23,7 +25,6 @@ exports.getList = (req, res) => {
             filter["reference"] = new RegExp(filter["q"], "i");
             delete filter["q"];
         }
-    
         Products.aggregate([
             {$match: filter},
             {$count: "count"}
@@ -36,9 +37,11 @@ exports.getList = (req, res) => {
                 {$match: filter},
                 {$limit: limit},
                 {$sort: sort}
+
             ]).then(response => {
+                const data = response.filter(product => !tags || (product.tags || []).includes(tags));
                 res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
-                res.json(response);
+                res.json(data);
             })
             .catch(err => res.status(400).json({ error: err }))
     
@@ -79,7 +82,8 @@ const getManyReference = (req, res) => {
 exports.createOne = (req, res) => {
     const obj = {
         ...req.body,
-        image: req.file && req.file.filename
+        image: req.file && req.file.filename,
+        tags: (req.body.tags || '').split(',')
     };
 
     if (!obj["image"]) delete obj["image"];
@@ -95,7 +99,8 @@ exports.createOne = (req, res) => {
 exports.updateOne = (req, res) => {
     const obj = {
         ...req.body,
-        image: req.file && req.file.filename
+        image: req.file && req.file.filename,
+        tags: (req.body.tags || '').split(',')
     };
 
     if (!obj["image"]) delete obj["image"];

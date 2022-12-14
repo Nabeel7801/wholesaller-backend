@@ -81,7 +81,9 @@ exports.createOne = (req, res) => {
         const obj = {
             ...req.body,
             reference,
-            image: req.file && req.file.filename
+            image: req.file && req.file.filename,
+            categories: (req.body.categories||"").split(","),
+            redirect_categories: (req.body.redirect_categories||"").split(",")
         };
         
         if (!obj["image"]) delete obj["image"];
@@ -97,11 +99,14 @@ exports.createOne = (req, res) => {
 
 // Update One
 exports.updateOne = (req, res) => {
+    console.log(req.body)
     const obj = {
         ...req.body,
-        image: req.file && req.file.filename
+        image: req.file && req.file.filename,
+        categories: (req.body.categories||"").split(","),
+        redirect_categories: (req.body.redirect_categories||"").split(",")
     };
-
+    console.log(obj)
     if (!obj["image"]) delete obj["image"];
 
     Banners.findByIdAndUpdate(req.params.id, obj, {new: true})

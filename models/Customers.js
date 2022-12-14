@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const customersSchema = new mongoose.Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, required: false },
+    outlet_name: { type: String, required: false },
     first_name: { type: String, required: false },
     last_name: { type: String, required: false },
     email: { type: String, required: false },
