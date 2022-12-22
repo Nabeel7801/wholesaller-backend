@@ -12,6 +12,9 @@ const paymentsSchema = new mongoose.Schema({
     reference_number: { type: String, required: false},
     notes: { type: String, required: false},
     type: { type: String, required: false},
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Payments = mongoose.model("payments", paymentsSchema)

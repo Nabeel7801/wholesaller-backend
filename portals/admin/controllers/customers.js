@@ -34,8 +34,8 @@ exports.getList = (req, res) => {
             Customers.aggregate([
                 {$skip: skip},
                 {$match: filter},
-                {$limit: limit},
                 {$sort: sort},
+                {$limit: limit},
 
                 { "$addFields": { "id": { "$toString": "$_id" }}},
 

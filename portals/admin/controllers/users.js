@@ -28,8 +28,8 @@ exports.getList = (req, res) => {
             Users.aggregate([
                 {$skip: skip},
                 {$match: filter},
-                {$limit: limit},
                 {$sort: sort},
+                {$limit: limit},
                 {
                     $lookup: {
                         from: "documents",

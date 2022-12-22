@@ -32,8 +32,8 @@ exports.getList = (req, res) => {
         Admins.aggregate([
             {$skip: skip},
             {$match: filter},
-            {$limit: limit},
             {$sort: sort},
+            {$limit: limit},
 
         ]).then(response => res.json(response))
             .catch(err => res.status(400).json({ error: err }))

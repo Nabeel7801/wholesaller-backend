@@ -12,6 +12,10 @@ const ordersSchema = new mongoose.Schema({
     total: { type: Number, required: false },
     status: { type: String, required: false },
     returned: { type: Boolean, required: false },
+    delivered_at: {type: String, required: false }
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Orders = mongoose.model("orders", ordersSchema)

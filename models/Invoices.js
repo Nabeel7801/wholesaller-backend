@@ -10,6 +10,9 @@ const invoicesSchema = new mongoose.Schema({
     amount: { type: Number, required: false},
     delivery_fees: { type: Number, required: false},
     balance_due: { type: Number, required: false },
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Invoices = mongoose.model("invoices", invoicesSchema)

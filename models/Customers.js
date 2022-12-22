@@ -10,6 +10,9 @@ const customersSchema = new mongoose.Schema({
     pincode: { type: String, required: false },
     state: { type: String, required: false },
     city: { type: String, required: false }
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Customers = mongoose.model("customers", customersSchema)

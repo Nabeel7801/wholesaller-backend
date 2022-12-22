@@ -17,6 +17,9 @@ const UserSchema = new mongoose.Schema({
     referral: { type: String, required: false },
     status: { type: String, required: false },
     document: { type: mongoose.Schema.Types.ObjectId, required: false }
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 // UserSchema.pre("save", async function (next) {

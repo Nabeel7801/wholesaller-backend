@@ -11,6 +11,9 @@ const sellersSchema = new mongoose.Schema({
     password: { type: String, required: false },
     zipcodes: {type: Array, required: false},
     token: { type: String, required: false },
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Sellers = mongoose.model("sellers", sellersSchema)

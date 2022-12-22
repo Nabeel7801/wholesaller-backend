@@ -35,8 +35,8 @@ exports.getList = (req, res) => {
             Products.aggregate([
                 {$skip: skip},
                 {$match: filter},
+                {$sort: sort},
                 {$limit: limit},
-                {$sort: sort}
 
             ]).then(response => {
                 const data = response.filter(product => !tags || (product.tags || []).includes(tags));

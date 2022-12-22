@@ -34,8 +34,8 @@ exports.getList = (req, res) => {
             Payments.aggregate([
                 {$skip: skip},
                 {$match: filter},
+                {$sort: sort},
                 {$limit: limit},
-                {$sort: sort}
             ]).then(response => {
                 res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);
                 res.json(response);

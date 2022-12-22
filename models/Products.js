@@ -12,6 +12,9 @@ const productsSchema = new mongoose.Schema({
     child_category: { type: String, required: false },
     image: { type: String, required: false },
     description: { type: String, required: false }
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Products = mongoose.model("products", productsSchema)

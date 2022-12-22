@@ -48,7 +48,6 @@ exports.getList = (req, res) => {
             Orders.aggregate([
                 {$skip: skip},
                 {$match: filter},
-                {$limit: limit},
                 {$unwind: "$basket"},
                 {
                     $lookup: {
@@ -70,6 +69,7 @@ exports.getList = (req, res) => {
                         basket: { $push: { $first: "$basket" } },
                         reference: { $first: "$reference" },
                         date: { $first: "$date" },
+                        delivered_at: { $first: "$delivered_at" },
                         customer_id: { $first: "$customer_id" },
                         delivery_fees: { $first: "$delivery_fees" },
                         total: { $first: "$total" },
@@ -80,6 +80,7 @@ exports.getList = (req, res) => {
                     }
                 },
                 {$sort: sort},
+                {$limit: limit},
 
             ]).then(response => {
                 res.setHeader('Content-Range', `items ${skip}-${range[1]}/${count}`);

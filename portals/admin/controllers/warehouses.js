@@ -37,8 +37,8 @@ exports.getList = (req, res) => {
             Warehouses.aggregate([
                 {$skip: skip},
                 {$match: filter},
-                {$limit: limit},
                 {$sort: sort},
+                {$limit: limit},
                 {
                     $set: {
                         zipcodes: {$slice: ["$zipcodes", 5]}

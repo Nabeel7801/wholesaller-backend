@@ -7,6 +7,9 @@ const bannerSchema = new mongoose.Schema({
     redirect_categories: { type: Array, required: false },
     image: { type: String, required: false },
     Link: { type: String, required: false },
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Banners = mongoose.model("banners", bannerSchema)

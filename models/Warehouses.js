@@ -7,6 +7,9 @@ const warehousesSchema = new mongoose.Schema({
     password: { type: String, required: false },
     zipcodes: {type: Array, required: false},
     token: { type: String, required: false },
+},
+{
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const Warehouses = mongoose.model("warehouses", warehousesSchema)

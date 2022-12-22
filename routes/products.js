@@ -16,7 +16,10 @@ router.post('/getProductByCategories', (req, res) => {
             }
         }
     ])
-    .then(response => res.json(response))
+    .then(response => {
+        const products = response?.map(p => {const obj = { ...p, id: p._id }; delete obj["_id"]; return obj});
+        res.json(products)
+    })
     .catch(err => res.status(400).json({ error: err }))
 })
 
